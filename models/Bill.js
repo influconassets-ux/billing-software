@@ -12,6 +12,8 @@ const billSchema = new mongoose.Schema({
     gm: { type: String },
     fees: { type: Number }
   }],
+  status: { type: String, default: 'Due' },
+  amountReceived: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -11,13 +11,16 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+const authRouter = require('./routes/auth');
 const billsRouter = require('./routes/bills');
 const clientsRouter = require('./routes/clients');
 const settingsRouter = require('./routes/settings');
+const authMiddleware = require('./middleware/auth');
 
-app.use('/api/bills', billsRouter);
-app.use('/api/clients', clientsRouter);
-app.use('/api/settings', settingsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/bills', authMiddleware, billsRouter);
+app.use('/api/clients', authMiddleware, clientsRouter);
+app.use('/api/settings', authMiddleware, settingsRouter);
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
