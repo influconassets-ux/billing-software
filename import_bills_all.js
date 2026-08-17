@@ -12,7 +12,7 @@ const importBills = async () => {
     await Bill.deleteMany({});
     console.log('Cleared existing bills.');
 
-    const workbook = xlsx.readFile('../Bills Table .xlsx');
+    const workbook = xlsx.readFile('../Bills Table.xlsx');
     
     // Iterate through all sheets except Sheet1 if it's empty
     for (const sheetName of workbook.SheetNames) {
@@ -45,16 +45,37 @@ const importBills = async () => {
         const fallbackYear = sheetYearMatch ? sheetYearMatch[0] : '2023';
 
         // Extract date from nature (e.g. "02.01.2023")
-        let dateStr = `01-01-${fallbackYear}`; 
+        let dateStr = null; 
         const dateMatch = nature.match(/(\d{2})[./-](\d{2})[./-](\d{4})/);
         if (dateMatch) {
           dateStr = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
         } else {
-          // Look for just a year like "2022"
+          // Look for just a year like "2022" in nature
           const yearMatch = nature.match(/(202\d)/);
           if (yearMatch) {
             dateStr = `01-01-${yearMatch[1]}`;
           }
+        }
+        
+        // If still no date, extract month/year from memoNo (e.g. 67/02/AUG/2026)
+        if (!dateStr) {
+          const memoParts = memoNo.split('/');
+          if (memoParts.length >= 4) {
+            const monthStr = memoParts[2].toUpperCase();
+            const yearStr = memoParts[3];
+            const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            let monthIndex = monthNames.indexOf(monthStr);
+            if (monthStr === "SEPT") monthIndex = 8; // Handle SEPT mapping
+            
+            if (monthIndex !== -1 && yearStr.match(/202\d/)) {
+              dateStr = `01-${String(monthIndex + 1).padStart(2, '0')}-${yearStr.substring(0,4)}`;
+            }
+          }
+        }
+        
+        // Final fallback
+        if (!dateStr) {
+           dateStr = `01-01-${fallbackYear}`;
         }
 
         const newBill = new Bill({
