@@ -9,7 +9,15 @@ const path = require('path');
 
 // Initialize Firebase Admin
 try {
-  const serviceAccount = require(path.join(__dirname, '..', 'firebase-service-account.json'));
+  let serviceAccount;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // Render production environment: parse the JSON string from env variable
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // Local development: read from the file (which is gitignored)
+    serviceAccount = require(path.join(__dirname, '..', 'firebase-service-account.json'));
+  }
+  
   if (!getApps().length) {
     initializeApp({
       credential: cert(serviceAccount)
