@@ -7,6 +7,8 @@ const billSchema = new mongoose.Schema({
   briefedBy: { type: String },
   client: { type: String },
   caseName: { type: String },
+  caseNumber: { type: String },
+  cor: { type: String },
   items: [{
     nature: { type: String },
     gm: { type: String },

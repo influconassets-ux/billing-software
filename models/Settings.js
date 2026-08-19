@@ -24,7 +24,8 @@ const settingsSchema = new mongoose.Schema({
   clerkPan: { type: String, default: 'DBMPM1314R' },
   residence: { type: String, default: '123/A, Example Street, Kolkata - 700001' },
   phone: { type: String, default: '+91 9876543210' },
-  email: { type: String, default: 'advocate@example.com' }
+  email: { type: String, default: 'advocate@example.com' },
+  forgotPasswordPhone: { type: String, default: '+919339919973' }
 });
 
 module.exports = mongoose.model('Settings', settingsSchema);
