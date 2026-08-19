@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Settings = require('../models/Settings');
+const authMiddleware = require('../middleware/auth');
 
 // Get settings
 router.get('/', async (req, res) => {
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // Update settings
-router.put('/', async (req, res) => {
+router.put('/', authMiddleware, async (req, res) => {
   try {
     let settings = await Settings.findOne();
     if (!settings) {

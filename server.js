@@ -20,7 +20,7 @@ const authMiddleware = require('./middleware/auth');
 app.use('/api/auth', authRouter);
 app.use('/api/bills', authMiddleware, billsRouter);
 app.use('/api/clients', authMiddleware, clientsRouter);
-app.use('/api/settings', authMiddleware, settingsRouter);
+app.use('/api/settings', settingsRouter);
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
