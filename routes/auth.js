@@ -27,7 +27,7 @@ try {
   console.error("Firebase Admin initialization error:", error);
 }
 
-const AUTHORIZED_PHONE_NUMBER = '+917679275382'; // The client's specific number
+const Settings = require('../models/Settings');
 
 
 // @route   POST api/auth/login
@@ -84,8 +84,11 @@ router.post('/reset-password', async (req, res) => {
     // 1. Verify the token with Firebase Admin
     const decodedToken = await getAuth().verifyIdToken(idToken);
     
-    // 2. Double check that the phone number matches the hardcoded authorized number
-    if (decodedToken.phone_number !== AUTHORIZED_PHONE_NUMBER) {
+    // 2. Double check that the phone number matches the dynamic authorized number in Settings
+    let settings = await Settings.findOne();
+    const authorizedPhone = (settings && settings.forgotPasswordPhone) ? settings.forgotPasswordPhone : '+919339919973';
+    
+    if (decodedToken.phone_number !== authorizedPhone) {
       return res.status(403).json({ message: "Unauthorized phone number." });
     }
 
