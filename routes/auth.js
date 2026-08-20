@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -109,6 +110,29 @@ router.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error("Password reset error:", error);
     res.status(401).json({ message: "Invalid or expired Firebase token" });
+  }
+});
+// @route   POST api/auth/verify-password
+// @desc    Verify current password for logged-in user
+// @access  Private
+router.post('/verify-password', authMiddleware, async (req, res) => {
+  const { password } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect old password' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
