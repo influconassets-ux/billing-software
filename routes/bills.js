@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
 // Update a bill
 router.put('/:id', async (req, res) => {
   try {
-    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.json(updatedBill);
   } catch (err) {
     res.status(400).json({ message: err.message });

@@ -24,7 +24,7 @@ router.put('/', authMiddleware, async (req, res) => {
     if (!settings) {
       settings = await Settings.create(req.body);
     } else {
-      settings = await Settings.findOneAndUpdate({}, req.body, { new: true });
+      settings = await Settings.findOneAndUpdate({}, req.body, { returnDocument: 'after' });
     }
     res.json(settings);
   } catch (err) {
