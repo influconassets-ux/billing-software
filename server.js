@@ -27,11 +27,13 @@ const authRouter = require('./routes/auth');
 const billsRouter = require('./routes/bills');
 const clientsRouter = require('./routes/clients');
 const settingsRouter = require('./routes/settings');
+const roughBillsRouter = require('./routes/roughBills');
 const authMiddleware = require('./middleware/auth');
 
 app.use('/api/auth', authRouter);
 app.use('/api/bills', authMiddleware, billsRouter);
 app.use('/api/clients', authMiddleware, clientsRouter);
+app.use('/api/rough-bills', authMiddleware, roughBillsRouter);
 app.use('/api/settings', settingsRouter);
 
 // Database Connection
