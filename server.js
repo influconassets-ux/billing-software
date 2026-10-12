@@ -7,7 +7,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-const allowedOrigins = ['http://localhost:5173', 'https://riddhiman-billing-software.netlify.app'];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://rhiddhiman-billing-software.netlify.app',
+  'https://riddhiman-billing-software.netlify.app'
+];
+if (process.env.CLIENT_URL && !allowedOrigins.includes(process.env.CLIENT_URL)) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(cors({
   origin: function(origin, callback){
     if(!origin || allowedOrigins.indexOf(origin) !== -1) {
