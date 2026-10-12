@@ -20,4 +20,6 @@ const billSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+billSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Bill', billSchema);

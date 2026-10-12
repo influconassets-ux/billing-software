@@ -46,7 +46,7 @@ router.get('/generate-memo', async (req, res) => {
 // Get all bills (ledger)
 router.get('/', async (req, res) => {
   try {
-    const bills = await Bill.find().sort({ createdAt: -1 });
+    const bills = await Bill.find().sort({ createdAt: -1 }).lean();
     res.json(bills);
   } catch (err) {
     res.status(500).json({ message: err.message });
