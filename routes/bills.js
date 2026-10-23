@@ -53,9 +53,32 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Helper to sanitize bill payload
+const sanitizeBillBody = (body) => {
+  const data = { ...body };
+  if (Array.isArray(data.items)) {
+    data.items = data.items.map(item => {
+      let fees = item.fees;
+      if (fees !== undefined && fees !== null && fees !== '') {
+        fees = Number(String(fees).replace(/,/g, '').trim());
+        if (isNaN(fees)) fees = 0;
+      } else {
+        fees = 0;
+      }
+      return {
+        nature: item.nature || '',
+        gm: item.gm || '',
+        fees: fees
+      };
+    });
+  }
+  return data;
+};
+
 // Create a new bill
 router.post('/', async (req, res) => {
-  const bill = new Bill(req.body);
+  const cleanBody = sanitizeBillBody(req.body);
+  const bill = new Bill(cleanBody);
   try {
     const newBill = await bill.save();
     res.status(201).json(newBill);
@@ -67,7 +90,8 @@ router.post('/', async (req, res) => {
 // Update a bill
 router.put('/:id', async (req, res) => {
   try {
-    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    const cleanBody = sanitizeBillBody(req.body);
+    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, cleanBody, { new: true });
     res.json(updatedBill);
   } catch (err) {
     res.status(400).json({ message: err.message });
