@@ -21,6 +21,7 @@ const billSchema = new mongoose.Schema({
   status: { type: String, default: 'Due' },
   amountReceived: { type: Number, default: 0 },
   billsProvided: { type: String, default: 'No' },
+  remarks: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
