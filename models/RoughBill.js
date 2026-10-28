@@ -13,6 +13,7 @@ const roughBillSchema = new mongoose.Schema({
     gm: { type: String },
     fees: { type: Number }
   }],
+  remarks: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 

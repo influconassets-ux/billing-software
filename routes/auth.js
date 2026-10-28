@@ -79,16 +79,16 @@ router.post('/login', async (req, res) => {
 // @desc    Reset password using Firebase Phone Auth token
 // @access  Public
 router.post('/reset-password', async (req, res) => {
-  const { idToken, newPassword, email } = req.body;
+  const { idToken, newPassword, email, target } = req.body;
 
   try {
     // 1. Verify the token with Firebase Admin
     const decodedToken = await getAuth().verifyIdToken(idToken);
-    
+
     // 2. Double check that the phone number matches the dynamic authorized number in Settings
     let settings = await Settings.findOne();
     const authorizedPhone = (settings && settings.forgotPasswordPhone) ? settings.forgotPasswordPhone : '+919339919973';
-    
+
     if (decodedToken.phone_number !== authorizedPhone) {
       return res.status(403).json({ message: "Unauthorized phone number." });
     }
@@ -101,12 +101,17 @@ router.post('/reset-password', async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 4. Hash the new password
+    // 4. Hash the new password and apply it to the requested target (account vs ledger)
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    const hashed = await bcrypt.hash(newPassword, salt);
+    if (target === 'ledger') {
+      user.ledgerPassword = hashed;
+    } else {
+      user.password = hashed;
+    }
     await user.save();
 
-    res.json({ success: true, message: "Password updated successfully" });
+    res.json({ success: true, message: `${target === 'ledger' ? 'Ledger' : 'Account'} password updated successfully` });
   } catch (error) {
     console.error("Password reset error:", error);
     res.status(401).json({ message: "Invalid or expired Firebase token" });
@@ -130,6 +135,50 @@ router.post('/verify-password', authMiddleware, async (req, res) => {
     }
 
     res.json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/auth/verify-ledger-password
+// @desc    Verify the separate ledger-access password
+// @access  Private
+router.post('/verify-ledger-password', authMiddleware, async (req, res) => {
+  const { password } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.ledgerPassword) {
+      return res.status(400).json({ message: 'Ledger password has not been set yet. Set it in Settings.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.ledgerPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect ledger password' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/auth/ledger-password-status
+// @desc    Check whether a ledger password has been set
+// @access  Private
+router.get('/ledger-password-status', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ isSet: !!user.ledgerPassword });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
